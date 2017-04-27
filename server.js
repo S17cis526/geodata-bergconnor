@@ -1,7 +1,7 @@
 "use strict;"
 
 // The port to serve on
-const PORT = 3000;
+const PORT = 4000;
 
 // global variables
 var fs = require('fs');
@@ -33,13 +33,27 @@ function serveFile(file, type, req, res) {
   });
 }
 
+function addLocation(req, res) {
+  var url = require('url').parse(req.url);
+  var qs = require('qs').parse(url.query);
+  var address = qs.address;
+  // erform geolocation with address
+  http.get('http://www.datasciencetoolkit.org/maps/api/geocode/json?sensor=false&address=' + address, function(err, body) {
+    if(err) {
+      // Rediret  back to index
+    }
+    var results = JSON.parse(body);
+  });
+}
+
 /** @function handleRequest
  * Handles incoming http requests
  * @param {http.incomingRequest} req - the request object
  * @param {http.serverResponse} res - the response object
  */
 function handleRequest(req, res) {
-  switch(req.url) {
+  var url = require('url').parse(req.url);
+  switch(url.pathname) {
     // Serving static files
     case '/':
     case '/index.html':
@@ -61,6 +75,11 @@ function handleRequest(req, res) {
       break;
     case '/united-states.json':
       serveFile('data/united-states.json', 'application/json', req, res);
+      break;
+
+    // Load location
+    case '/add-location':
+      addLocation(req, res);
       break;
 
     // Serve error code
